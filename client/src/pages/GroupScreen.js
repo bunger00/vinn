@@ -325,7 +325,12 @@ function GroupScreen() {
   
   // Oppkobling til socket.io
   useEffect(() => {
-    const newSocket = io('/');
+    // Bestem server-URL basert på miljø
+    const socketUrl = process.env.NODE_ENV === 'production' 
+      ? '/.netlify/functions/server' 
+      : '/';
+    
+    const newSocket = io(socketUrl);
     
     newSocket.on('connect', () => {
       console.log('Tilkoblet til serveren');

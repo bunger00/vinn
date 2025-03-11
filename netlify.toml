@@ -1,0 +1,13 @@
+[build]
+  base = "."
+  publish = "client/build"
+  command = "npm run build"
+  
+[functions]
+  directory = "functions"
+
+# Redirect for Single Page Application
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 

@@ -49,10 +49,10 @@ const RoundNumber = styled.div`
 `;
 
 const RoundMultiplier = styled.div`
-  font-size: 1.5rem;
-  color: var(--accent-green);
+  font-size: 1.2rem;
+  color: var(--accent-yellow);
   font-weight: bold;
-  animation: ${props => props.active ? 'glow 2s infinite' : 'none'};
+  margin-top: 0.3rem;
 `;
 
 const TimerContainer = styled.div`
@@ -374,7 +374,12 @@ function MainScreen() {
   
   // Oppkobling til socket.io
   useEffect(() => {
-    const newSocket = io("/");
+    // Bestem server-URL basert på miljø
+    const socketUrl = process.env.NODE_ENV === 'production' 
+      ? '/.netlify/functions/server' 
+      : '/';
+    
+    const newSocket = io(socketUrl);
     
     newSocket.on("connect", () => {
       console.log("Tilkoblet til serveren");
