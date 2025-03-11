@@ -1,0 +1,108 @@
+:root {
+  /* Fargepalett */
+  --background-dark: #121212;
+  --background-light: #1E1E1E;
+  --accent-blue: #00BFFF;
+  --accent-green: #39FF14;
+  --accent-red: #FF3131;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B0B0B0;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  
+  /* Fonts */
+  --main-font: 'Roboto', sans-serif;
+  --display-font: 'Orbitron', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--main-font);
+  background-color: var(--background-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--display-font);
+  margin-bottom: 1rem;
+  letter-spacing: 1px;
+}
+
+h1 {
+  font-size: 2.5rem;
+  text-shadow: 0 0 10px var(--accent-blue);
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--main-font);
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+input, textarea {
+  font-family: var(--main-font);
+  border: 1px solid var(--text-secondary);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Animasjoner */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 5px var(--accent-blue);
+  }
+  50% {
+    box-shadow: 0 0 20px var(--accent-blue), 0 0 30px var(--accent-blue);
+  }
+  100% {
+    box-shadow: 0 0 5px var(--accent-blue);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsivt design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+  
+  .container {
+    padding: 0.5rem;
+  }
+} 
