@@ -372,6 +372,7 @@ function MainScreen() {
   const [revealedGroups, setRevealedGroups] = useState({});
   const [pointsRevealed, setPointsRevealed] = useState(false);
   const [pointsAnnouncement, setPointsAnnouncement] = useState(false);
+  const [allChoicesRevealed, setAllChoicesRevealed] = useState(false);
   
   // Oppkobling til socket.io
   useEffect(() => {
@@ -452,6 +453,9 @@ function MainScreen() {
         waitingForNextRound: false,
       }));
       setRevealedGroups({});
+      setPointsRevealed(false);
+      setPointsAnnouncement(false);
+      setAllChoicesRevealed(false);
     });
     
     newSocket.on("round-end", (data) => {
