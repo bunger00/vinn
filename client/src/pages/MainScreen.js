@@ -376,6 +376,34 @@ const PointsAnnouncement = styled.div`
   }
 `;
 
+const CancelNegotiationButton = styled.button`
+  background-color: #ff4d4d; /* Rød */
+  color: white;
+  font-weight: bold;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
+  &:hover {
+    background-color: #e60000;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+`;
+
 // Hovedkomponent
 function MainScreen() {
   const [socket, setSocket] = useState(null);
@@ -614,6 +642,13 @@ function MainScreen() {
     );
   };
   
+  // Funksjon for å avbryte forhandling
+  const cancelNegotiation = useCallback(() => {
+    if (socket && gameState.isNegotiationRound) {
+      socket.emit('cancel-negotiation');
+    }
+  }, [socket, gameState.isNegotiationRound]);
+  
   return (
     <MainContainer>
       <ScoreboardContainer>
@@ -687,6 +722,9 @@ function MainScreen() {
             <NegotiationIcon>🤝</NegotiationIcon>
             <h2>Forhandling Pågår</h2>
             <p>Resterende tid: {gameState.negotiationTimer} sekunder</p>
+            <CancelNegotiationButton onClick={cancelNegotiation}>
+              Avbryt Forhandling
+            </CancelNegotiationButton>
           </NegotiationIndicator>
         )}
       </ScoreboardContainer>

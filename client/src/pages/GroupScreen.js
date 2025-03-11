@@ -13,6 +13,59 @@ const GroupScreenContainer = styled.div`
   color: var(--text-primary);
 `;
 
+const PointTableContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  width: 100%;
+`;
+
+const PointTable = styled.table`
+  border-collapse: collapse;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1.5rem;
+  max-width: 500px;
+  width: 100%;
+  overflow: hidden;
+`;
+
+const TableRow = styled.tr`
+  &:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+`;
+
+const TableCell = styled.td`
+  padding: 0.6rem 1rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.95rem;
+`;
+
+const TableHeader = styled.th`
+  padding: 0.7rem 1rem;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-weight: 600;
+  color: var(--text-highlight, #ffcc00);
+`;
+
+const TableTitle = styled.div`
+  font-size: 1.1rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-highlight, #ffcc00);
+`;
+
 const GroupHeader = styled.div`
   display: flex;
   justify-content: space-between;
@@ -289,6 +342,20 @@ const InfoMessage = styled.div`
   font-style: italic;
 `;
 
+const NegotiationVoteTimer = styled.div`
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin: 15px 0;
+  color: var(--highlight-color);
+  text-align: center;
+`;
+
+const NegotiationVoteStatus = styled.p`
+  margin-top: 10px;
+  font-style: italic;
+  color: var(--text-secondary);
+`;
+
 // Hovedkomponent
 function GroupScreen() {
   const navigate = useNavigate();
@@ -404,15 +471,20 @@ function GroupScreen() {
     
     newSocket.on('negotiation-vote-start', () => {
       setNegotiationVoted(false);
+      // Vis forhandlingstimer allerede her da den starter umiddelbart
+      setInfoMessage("Forhandlingsavstemming har startet. Timer løper allerede!");
     });
     
     newSocket.on('negotiation-start', () => {
-      // Forhandling har startet
+      // Forhandling fortsetter (alle stemte ja)
+      setInfoMessage("Alle grupper stemte JA! Forhandling fortsetter.");
     });
     
     newSocket.on('negotiation-end', () => {
       setSelectedChoice(null);
       setChoiceLocked(false);
+      // Informer om at vi nå er tilbake til vanlig runde
+      setInfoMessage("Forhandling avsluttet. Du har 60 sekunder til å velge X eller Y.");
     });
     
     newSocket.on('game-full-reset', () => {
@@ -514,6 +586,63 @@ function GroupScreen() {
   
   return (
     <GroupScreenContainer>
+      <PointTableContainer>
+        <div>
+          <TableTitle>Poengtabell</TableTitle>
+          <PointTable>
+            <thead>
+              <TableRow>
+                <TableHeader>Kombinasjon</TableHeader>
+                <TableHeader>Resultat</TableHeader>
+                <TableHeader>Poeng</TableHeader>
+              </TableRow>
+            </thead>
+            <tbody>
+              <TableRow>
+                <TableCell>4X</TableCell>
+                <TableCell>Alle taper</TableCell>
+                <TableCell>1000 kr hver</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>3X</TableCell>
+                <TableCell>X'ene vinner</TableCell>
+                <TableCell>1000 kr hver</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>1Y</TableCell>
+                <TableCell>Y'en taper</TableCell>
+                <TableCell>3000 kr</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>2X</TableCell>
+                <TableCell>X'ene vinner</TableCell>
+                <TableCell>2000 kr hver</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>2Y</TableCell>
+                <TableCell>Y'ene taper</TableCell>
+                <TableCell>2000 kr hver</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>1X</TableCell>
+                <TableCell>X'en vinner</TableCell>
+                <TableCell>3000 kr</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>3Y</TableCell>
+                <TableCell>Y'ene taper</TableCell>
+                <TableCell>1000 kr hver</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>4Y</TableCell>
+                <TableCell>Alle vinner</TableCell>
+                <TableCell>1000 kr hver</TableCell>
+              </TableRow>
+            </tbody>
+          </PointTable>
+        </div>
+      </PointTableContainer>
+      
       <GroupHeader>
         <GroupInfo>
           {editingName ? (
@@ -591,19 +720,33 @@ function GroupScreen() {
           <VoteDescription>
             Dette er en mulig forhandlingsrunde. Vil du delta i en 3-minutters forhandling med de andre gruppene?
             Alle gruppene må være enige for at forhandlingen skal skje.
+            <strong> Timeren løper allerede!</strong>
           </VoteDescription>
           
+          <NegotiationVoteTimer>{gameState.negotiationTimer} sekunder</NegotiationVoteTimer>
+          
           <VoteButtons>
-            <VoteYesButton onClick={() => voteForNegotiation(true)}>Ja</VoteYesButton>
-            <VoteNoButton onClick={() => voteForNegotiation(false)}>Nei</VoteNoButton>
+            <VoteYesButton onClick={() => voteForNegotiation(true)}>Ja til forhandling</VoteYesButton>
+            <VoteNoButton onClick={() => voteForNegotiation(false)}>Nei, start runden</VoteNoButton>
           </VoteButtons>
         </NegotiationVote>
       )}
       
-      {gameState.isNegotiationRound && (negotiationVoted || gameState.currentRound === 10) && (
+      {gameState.isNegotiationRound && negotiationVoted && (gameState.currentRound === 5 || gameState.currentRound === 8) && (
         <NegotiationActive>
           <h3>Forhandling Pågår</h3>
-          <p>Diskuter strategi med de andre gruppene. Du har:</p>
+          <p>Du har stemt {negotiationVoted ? "på forhandling" : ""}. Venter på alle grupper...</p>
+          <NegotiationTimer>{gameState.negotiationTimer} sekunder</NegotiationTimer>
+          <NegotiationVoteStatus>
+            Hvis alle stemmer JA fortsetter forhandlingen. Hvis noen stemmer NEI starter vanlig runde.
+          </NegotiationVoteStatus>
+        </NegotiationActive>
+      )}
+      
+      {gameState.isNegotiationRound && gameState.currentRound === 10 && (
+        <NegotiationActive>
+          <h3>Obligatorisk Forhandlingsrunde</h3>
+          <p>Dette er den siste runden med 10x multiplier! Diskuter strategi med de andre gruppene. Du har:</p>
           <NegotiationTimer>{gameState.negotiationTimer} sekunder</NegotiationTimer>
           <p>Etter forhandlingen får du 60 sekunder til å bestemme ditt valg.</p>
         </NegotiationActive>

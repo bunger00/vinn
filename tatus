@@ -1,0 +1,375 @@
+[1mdiff --git a/client/src/pages/GroupScreen.js b/client/src/pages/GroupScreen.js[m
+[1mindex d181a0b..4feed52 100644[m
+[1m--- a/client/src/pages/GroupScreen.js[m
+[1m+++ b/client/src/pages/GroupScreen.js[m
+[36m@@ -13,6 +13,59 @@[m [mconst GroupScreenContainer = styled.div`[m
+   color: var(--text-primary);[m
+ `;[m
+ [m
+[32m+[m[32mconst PointTableContainer = styled.div`[m
+[32m+[m[32m  display: flex;[m
+[32m+[m[32m  justify-content: center;[m
+[32m+[m[32m  align-items: center;[m
+[32m+[m[32m  margin-bottom: 2rem;[m
+[32m+[m[32m  width: 100%;[m
+[32m+[m[32m`;[m
+[32m+[m
+[32m+[m[32mconst PointTable = styled.table`[m
+[32m+[m[32m  border-collapse: collapse;[m
+[32m+[m[32m  background-color: rgba(0, 0, 0, 0.3);[m
+[32m+[m[32m  border-radius: 8px;[m
+[32m+[m[32m  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);[m
+[32m+[m[32m  margin-bottom: 1.5rem;[m
+[32m+[m[32m  max-width: 500px;[m
+[32m+[m[32m  width: 100%;[m
+[32m+[m[32m  overflow: hidden;[m
+[32m+[m[32m`;[m
+[32m+[m
+[32m+[m[32mconst TableRow = styled.tr`[m
+[32m+[m[32m  &:nth-child(odd) {[m
+[32m+[m[32m    background-color: rgba(255, 255, 255, 0.05);[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+[32m+[m[32m  &:hover {[m
+[32m+[m[32m    background-color: rgba(255, 255, 255, 0.1);[m
+[32m+[m[32m  }[m
+[32m+[m[32m`;[m
+[32m+[m
+[32m+[m[32mconst TableCell = styled.td`[m
+[32m+[m[32m  padding: 0.6rem 1rem;[m
+[32m+[m[32m  text-align: center;[m
+[32m+[m[32m  border: 1px solid rgba(255, 255, 255, 0.1);[m
+[32m+[m[32m  font-size: 0.95rem;[m
+[32m+[m[32m`;[m
+[32m+[m
+[32m+[m[32mconst TableHeader = styled.th`[m
+[32m+[m[32m  padding: 0.7rem 1rem;[m
+[32m+[m[32m  text-align: center;[m
+[32m+[m[32m  background-color: rgba(0, 0, 0, 0.4);[m
+[32m+[m[32m  border: 1px solid rgba(255, 255, 255, 0.15);[m
+[32m+[m[32m  font-weight: 600;[m
+[32m+[m[32m  color: var(--text-highlight, #ffcc00);[m
+[32m+[m[32m`;[m
+[32m+[m
+[32m+[m[32mconst TableTitle = styled.div`[m
+[32m+[m[32m  font-size: 1.1rem;[m
+[32m+[m[32m  text-align: center;[m
+[32m+[m[32m  margin-bottom: 0.5rem;[m
+[32m+[m[32m  font-weight: 600;[m
+[32m+[m[32m  color: var(--text-highlight, #ffcc00);[m
+[32m+[m[32m`;[m
+[32m+[m
+ const GroupHeader = styled.div`[m
+   display: flex;[m
+   justify-content: space-between;[m
+[36m@@ -289,6 +342,20 @@[m [mconst InfoMessage = styled.div`[m
+   font-style: italic;[m
+ `;[m
+ [m
+[32m+[m[32mconst NegotiationVoteTimer = styled.div`[m
+[32m+[m[32m  font-size: 1.8rem;[m
+[32m+[m[32m  font-weight: bold;[m
+[32m+[m[32m  margin: 15px 0;[m
+[32m+[m[32m  color: var(--highlight-color);[m
+[32m+[m[32m  text-align: center;[m
+[32m+[m[32m`;[m
+[32m+[m
+[32m+[m[32mconst NegotiationVoteStatus = styled.p`[m
+[32m+[m[32m  margin-top: 10px;[m
+[32m+[m[32m  font-style: italic;[m
+[32m+[m[32m  color: var(--text-secondary);[m
+[32m+[m[32m`;[m
+[32m+[m
+ // Hovedkomponent[m
+ function GroupScreen() {[m
+   const navigate = useNavigate();[m
+[36m@@ -404,15 +471,20 @@[m [mfunction GroupScreen() {[m
+     [m
+     newSocket.on('negotiation-vote-start', () => {[m
+       setNegotiationVoted(false);[m
+[32m+[m[32m      // Vis forhandlingstimer allerede her da den starter umiddelbart[m
+[32m+[m[32m      setInfoMessage("Forhandlingsavstemming har startet. Timer løper allerede!");[m
+     });[m
+     [m
+     newSocket.on('negotiation-start', () => {[m
+[31m-      // Forhandling har startet[m
+[32m+[m[32m      // Forhandling fortsetter (alle stemte ja)[m
+[32m+[m[32m      setInfoMessage("Alle grupper stemte JA! Forhandling fortsetter.");[m
+     });[m
+     [m
+     newSocket.on('negotiation-end', () => {[m
+       setSelectedChoice(null);[m
+       setChoiceLocked(false);[m
+[32m+[m[32m      // Informer om at vi nå er tilbake til vanlig runde[m
+[32m+[m[32m      setInfoMessage("Forhandling avsluttet. Du har 60 sekunder til å velge X eller Y.");[m
+     });[m
+     [m
+     newSocket.on('game-full-reset', () => {[m
+[36m@@ -514,6 +586,63 @@[m [mfunction GroupScreen() {[m
+   [m
+   return ([m
+     <GroupScreenContainer>[m
+[32m+[m[32m      <PointTableContainer>[m
+[32m+[m[32m        <div>[m
+[32m+[m[32m          <TableTitle>Poengtabell</TableTitle>[m
+[32m+[m[32m          <PointTable>[m
+[32m+[m[32m            <thead>[m
+[32m+[m[32m              <TableRow>[m
+[32m+[m[32m                <TableHeader>Kombinasjon</TableHeader>[m
+[32m+[m[32m                <TableHeader>Resultat</TableHeader>[m
+[32m+[m[32m                <TableHeader>Poeng</TableHeader>[m
+[32m+[m[32m              </TableRow>[m
+[32m+[m[32m            </thead>[m
+[32m+[m[32m            <tbody>[m
+[32m+[m[32m              <TableRow>[m
+[32m+[m[32m                <TableCell>4X</TableCell>[m
+[32m+[m[32m                <TableCell>Alle taper</TableCell>[m
+[32m+[m[32m                <TableCell>1000 kr hver</TableCell>[m
+[32m+[m[32m              </TableRow>[m
+[32m+[m[32m              <TableRow>[m
+[32m+[m[32m                <TableCell>3X</TableCell>[m
+[32m+[m[32m                <TableCell>X'ene vinner</TableCell>[m
+[32m+[m[32m                <TableCell>1000 kr hver</TableCell>[m
+[32m+[m[32m              </TableRow>[m
+[32m+[m[32m              <TableRow>[m
+[32m+[m[32m                <TableCell>1Y</TableCell>[m
+[32m+[m[32m                <TableCell>Y'en taper</TableCell>[m
+[32m+[m[32m                <TableCell>3000 kr</TableCell>[m
+[32m+[m[32m              </TableRow>[m
+[32m+[m[32m              <TableRow>[m
+[32m+[m[32m                <TableCell>2X</TableCell>[m
+[32m+[m[32m                <TableCell>X'ene vinner</TableCell>[m
+[32m+[m[32m                <TableCell>2000 kr hver</TableCell>[m
+[32m+[m[32m              </TableRow>[m
+[32m+[m[32m              <TableRow>[m
+[32m+[m[32m                <TableCell>2Y</TableCell>[m
+[32m+[m[32m                <TableCell>Y'ene taper</TableCell>[m
+[32m+[m[32m                <TableCell>2000 kr hver</TableCell>[m
+[32m+[m[32m              </TableRow>[m
+[32m+[m[32m              <TableRow>[m
+[32m+[m[32m                <TableCell>1X</TableCell>[m
+[32m+[m[32m                <TableCell>X'en vinner</TableCell>[m
+[32m+[m[32m                <TableCell>3000 kr</TableCell>[m
+[32m+[m[32m              </TableRow>[m
+[32m+[m[32m              <TableRow>[m
+[32m+[m[32m                <TableCell>3Y</TableCell>[m
+[32m+[m[32m                <TableCell>Y'ene taper</TableCell>[m
+[32m+[m[32m                <TableCell>1000 kr hver</TableCell>[m
+[32m+[m[32m              </TableRow>[m
+[32m+[m[32m              <TableRow>[m
+[32m+[m[32m                <TableCell>4Y</TableCell>[m
+[32m+[m[32m                <TableCell>Alle vinner</TableCell>[m
+[32m+[m[32m                <TableCell>1000 kr hver</TableCell>[m
+[32m+[m[32m              </TableRow>[m
+[32m+[m[32m            </tbody>[m
+[32m+[m[32m          </PointTable>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m      </PointTableContainer>[m
+[32m+[m[41m      [m
+       <GroupHeader>[m
+         <GroupInfo>[m
+           {editingName ? ([m
+[36m@@ -591,19 +720,33 @@[m [mfunction GroupScreen() {[m
+           <VoteDescription>[m
+             Dette er en mulig forhandlingsrunde. Vil du delta i en 3-minutters forhandling med de andre gruppene?[m
+             Alle gruppene må være enige for at forhandlingen skal skje.[m
+[32m+[m[32m            <strong> Timeren løper allerede!</strong>[m
+           </VoteDescription>[m
+           [m
+[32m+[m[32m          <NegotiationVoteTimer>{gameState.negotiationTimer} sekunder</NegotiationVoteTimer>[m
+[32m+[m[41m          [m
+           <VoteButtons>[m
+[31m-            <VoteYesButton onClick={() => voteForNegotiation(true)}>Ja</VoteYesButton>[m
+[31m-            <VoteNoButton onClick={() => voteForNegotiation(false)}>Nei</VoteNoButton>[m
+[32m+[m[32m            <VoteYesButton onClick={() => voteForNegotiation(true)}>Ja til forhandling</VoteYesButton>[m
+[32m+[m[32m            <VoteNoButton onClick={() => voteForNegotiation(false)}>Nei, start runden</VoteNoButton>[m
+           </VoteButtons>[m
+         </NegotiationVote>[m
+       )}[m
+       [m
+[31m-      {gameState.isNegotiationRound && (negotiationVoted || gameState.currentRound === 10) && ([m
+[32m+[m[32m      {gameState.isNegotiationRound && negotiationVoted && (gameState.currentRound === 5 || gameState.currentRound === 8) && ([m
+         <NegotiationActive>[m
+           <h3>Forhandling Pågår</h3>[m
+[31m-          <p>Diskuter strategi med de andre gruppene. Du har:</p>[m
+[32m+[m[32m          <p>Du har stemt {negotiationVoted ? "på forhandling" : ""}. Venter på alle grupper...</p>[m
+[32m+[m[32m          <NegotiationTimer>{gameState.negotiationTimer} sekunder</NegotiationTimer>[m
+[32m+[m[32m          <NegotiationVoteStatus>[m
+[32m+[m[32m            Hvis alle stemmer JA fortsetter forhandlingen. Hvis noen stemmer NEI starter vanlig runde.[m
+[32m+[m[32m          </NegotiationVoteStatus>[m
+[32m+[m[32m        </NegotiationActive>[m
+[32m+[m[32m      )}[m
+[32m+[m[41m      [m
+[32m+[m[32m      {gameState.isNegotiationRound && gameState.currentRound === 10 && ([m
+[32m+[m[32m        <NegotiationActive>[m
+[32m+[m[32m          <h3>Obligatorisk Forhandlingsrunde</h3>[m
+[32m+[m[32m          <p>Dette er den siste runden med 10x multiplier! Diskuter strategi med de andre gruppene. Du har:</p>[m
+           <NegotiationTimer>{gameState.negotiationTimer} sekunder</NegotiationTimer>[m
+           <p>Etter forhandlingen får du 60 sekunder til å bestemme ditt valg.</p>[m
+         </NegotiationActive>[m
+[1mdiff --git a/client/src/pages/MainScreen.js b/client/src/pages/MainScreen.js[m
+[1mindex eff310d..180b206 100644[m
+[1m--- a/client/src/pages/MainScreen.js[m
+[1m+++ b/client/src/pages/MainScreen.js[m
+[36m@@ -376,6 +376,34 @@[m [mconst PointsAnnouncement = styled.div`[m
+   }[m
+ `;[m
+ [m
+[32m+[m[32mconst CancelNegotiationButton = styled.button`[m
+[32m+[m[32m  background-color: #ff4d4d; /* Rød */[m
+[32m+[m[32m  color: white;[m
+[32m+[m[32m  font-weight: bold;[m
+[32m+[m[32m  padding: 12px 20px;[m
+[32m+[m[32m  border: none;[m
+[32m+[m[32m  border-radius: 5px;[m
+[32m+[m[32m  cursor: pointer;[m
+[32m+[m[32m  font-size: 16px;[m
+[32m+[m[32m  margin-top: 10px;[m
+[32m+[m[32m  transition: all 0.2s ease;[m
+[32m+[m[32m  display: flex;[m
+[32m+[m[32m  align-items: center;[m
+[32m+[m[32m  justify-content: center;[m
+[32m+[m[32m  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);[m
+[32m+[m[41m  [m
+[32m+[m[32m  &:hover {[m
+[32m+[m[32m    background-color: #e60000;[m
+[32m+[m[32m    transform: translateY(-2px);[m
+[32m+[m[32m    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+[32m+[m[32m  &:active {[m
+[32m+[m[32m    transform: translateY(1px);[m
+[32m+[m[32m    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);[m
+[32m+[m[32m  }[m
+[32m+[m[32m`;[m
+[32m+[m
+ // Hovedkomponent[m
+ function MainScreen() {[m
+   const [socket, setSocket] = useState(null);[m
+[36m@@ -614,6 +642,13 @@[m [mfunction MainScreen() {[m
+     );[m
+   };[m
+   [m
+[32m+[m[32m  // Funksjon for å avbryte forhandling[m
+[32m+[m[32m  const cancelNegotiation = useCallback(() => {[m
+[32m+[m[32m    if (socket && gameState.isNegotiationRound) {[m
+[32m+[m[32m      socket.emit('cancel-negotiation');[m
+[32m+[m[32m    }[m
+[32m+[m[32m  }, [socket, gameState.isNegotiationRound]);[m
+[32m+[m[41m  [m
+   return ([m
+     <MainContainer>[m
+       <ScoreboardContainer>[m
+[36m@@ -687,6 +722,9 @@[m [mfunction MainScreen() {[m
+             <NegotiationIcon>🤝</NegotiationIcon>[m
+             <h2>Forhandling Pågår</h2>[m
+             <p>Resterende tid: {gameState.negotiationTimer} sekunder</p>[m
+[32m+[m[32m            <CancelNegotiationButton onClick={cancelNegotiation}>[m
+[32m+[m[32m              Avbryt Forhandling[m
+[32m+[m[32m            </CancelNegotiationButton>[m
+           </NegotiationIndicator>[m
+         )}[m
+       </ScoreboardContainer>[m
+[1mdiff --git a/server.js b/server.js[m
+[1mindex 35d075d..6f02122 100644[m
+[1m--- a/server.js[m
+[1m+++ b/server.js[m
+[36m@@ -103,14 +103,19 @@[m [mfunction startNextRound() {[m
+   [m
+   // Sjekk om det er en forhandlingsrunde[m
+   if (gameState.currentRound === 5 || gameState.currentRound === 8) {[m
+[31m-    // Valgfri forhandlingsrunde[m
+[32m+[m[32m    // Valgfri forhandlingsrunde - starter timer med en gang[m
+     gameState.negotiationVotes = { yes: 0, no: 0 };[m
+     gameState.isNegotiationRound = true;[m
+     [m
+     // Sett multiplikator basert på runde[m
+     gameState.multiplier = gameState.currentRound === 5 ? 3 : 5;[m
+     [m
+[32m+[m[32m    // Start forhandlingstimeren umiddelbart[m
+[32m+[m[32m    gameState.negotiationTimer = 180; // 3 minutter[m
+     io.emit('negotiation-vote-start');[m
+[32m+[m[41m    [m
+[32m+[m[32m    // Start nedtelling umiddelbart[m
+[32m+[m[32m    startNegotiationTimer();[m
+   } else if (gameState.currentRound === 10) {[m
+     // Obligatorisk forhandlingsrunde[m
+     gameState.isNegotiationRound = true;[m
+[36m@@ -154,16 +159,22 @@[m [mfunction startRoundTimer() {[m
+ }[m
+ [m
+ // Funksjon for å starte forhandlingstimer[m
+[32m+[m[32mlet negotiationTimerInterval;[m
+ function startNegotiationTimer() {[m
+[32m+[m[32m  // Rydde opp eventuelle eksisterende intervaller[m
+[32m+[m[32m  if (negotiationTimerInterval) {[m
+[32m+[m[32m    clearInterval(negotiationTimerInterval);[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+   gameState.negotiationTimer = 180; // 3 minutter[m
+   [m
+[31m-  const timerInterval = setInterval(() => {[m
+[32m+[m[32m  negotiationTimerInterval = setInterval(() => {[m
+     gameState.negotiationTimer--;[m
+     [m
+     io.emit('negotiation-timer-update', gameState.negotiationTimer);[m
+     [m
+     if (gameState.negotiationTimer <= 0) {[m
+[31m-      clearInterval(timerInterval);[m
+[32m+[m[32m      clearInterval(negotiationTimerInterval);[m
+       endNegotiation();[m
+     }[m
+   }, 1000);[m
+[36m@@ -194,6 +205,23 @@[m [mfunction endNegotiation() {[m
+   startRoundTimer();[m
+ }[m
+ [m
+[32m+[m[32m// Funksjon for å avbryte forhandling og gå til vanlig runde[m
+[32m+[m[32mfunction cancelNegotiation() {[m
+[32m+[m[32m  // Stopp forhandlingstimeren[m
+[32m+[m[32m  if (negotiationTimerInterval) {[m
+[32m+[m[32m    clearInterval(negotiationTimerInterval);[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+[32m+[m[32m  gameState.isNegotiationRound = false;[m
+[32m+[m[41m  [m
+[32m+[m[32m  // Informer alle klienter om at forhandlingen er avsluttet[m
+[32m+[m[32m  io.emit('negotiation-end');[m
+[32m+[m[41m  [m
+[32m+[m[32m  // Start en vanlig rundtimer[m
+[32m+[m[32m  gameState.timer = 60;[m
+[32m+[m[32m  startRoundTimer();[m
+[32m+[m[32m}[m
+[32m+[m
+ // Funksjon for å avslutte runden og beregne resultater[m
+ function endRound() {[m
+   // Sjekk om runden allerede er avsluttet for å unngå duplisering[m
+[36m@@ -478,17 +506,21 @@[m [mio.on('connection', (socket) => {[m
+       // Sjekk om alle har stemt[m
+       const groupCount = Object.keys(gameState.groups).length;[m
+       if (gameState.negotiationVotes.yes + gameState.negotiationVotes.no >= groupCount) {[m
+[31m-        // Hvis alle har stemt ja, start forhandling[m
+[32m+[m[32m        // Hvis alle har stemt ja, fortsett forhandling (timer kjører allerede)[m
+         if (gameState.negotiationVotes.yes === groupCount) {[m
+[31m-          startNegotiation();[m
+[32m+[m[32m          io.emit('negotiation-start');[m
+         } else {[m
+[31m-          // Ellers, hopp over forhandling og gå til normal runde[m
+[31m-          gameState.isNegotiationRound = false;[m
+[31m-          startRoundTimer();[m
+[32m+[m[32m          // Ellers, avbryt forhandling og gå til normal runde[m
+[32m+[m[32m          cancelNegotiation();[m
+         }[m
+       }[m
+[31m-      [m
+[31m-      io.emit('update-state', gameState);[m
+[32m+[m[32m    }[m
+[32m+[m[32m  });[m
+[32m+[m[41m  [m
+[32m+[m[32m  // Håndter avbrytelse av forhandling fra hovedskjermen[m
+[32m+[m[32m  socket.on('cancel-negotiation', () => {[m
+[32m+[m[32m    if (gameState.isNegotiationRound) {[m
+[32m+[m[32m      cancelNegotiation();[m
+     }[m
+   });[m
+   [m

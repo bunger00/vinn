@@ -103,14 +103,19 @@ function startNextRound() {
   
   // Sjekk om det er en forhandlingsrunde
   if (gameState.currentRound === 5 || gameState.currentRound === 8) {
-    // Valgfri forhandlingsrunde
+    // Valgfri forhandlingsrunde - starter timer med en gang
     gameState.negotiationVotes = { yes: 0, no: 0 };
     gameState.isNegotiationRound = true;
     
     // Sett multiplikator basert på runde
     gameState.multiplier = gameState.currentRound === 5 ? 3 : 5;
     
+    // Start forhandlingstimeren umiddelbart
+    gameState.negotiationTimer = 180; // 3 minutter
     io.emit('negotiation-vote-start');
+    
+    // Start nedtelling umiddelbart
+    startNegotiationTimer();
   } else if (gameState.currentRound === 10) {
     // Obligatorisk forhandlingsrunde
     gameState.isNegotiationRound = true;
@@ -154,16 +159,22 @@ function startRoundTimer() {
 }
 
 // Funksjon for å starte forhandlingstimer
+let negotiationTimerInterval;
 function startNegotiationTimer() {
+  // Rydde opp eventuelle eksisterende intervaller
+  if (negotiationTimerInterval) {
+    clearInterval(negotiationTimerInterval);
+  }
+  
   gameState.negotiationTimer = 180; // 3 minutter
   
-  const timerInterval = setInterval(() => {
+  negotiationTimerInterval = setInterval(() => {
     gameState.negotiationTimer--;
     
     io.emit('negotiation-timer-update', gameState.negotiationTimer);
     
     if (gameState.negotiationTimer <= 0) {
-      clearInterval(timerInterval);
+      clearInterval(negotiationTimerInterval);
       endNegotiation();
     }
   }, 1000);
@@ -191,6 +202,23 @@ function endNegotiation() {
   io.emit('negotiation-end');
   
   // Start normal runde etter forhandling
+  startRoundTimer();
+}
+
+// Funksjon for å avbryte forhandling og gå til vanlig runde
+function cancelNegotiation() {
+  // Stopp forhandlingstimeren
+  if (negotiationTimerInterval) {
+    clearInterval(negotiationTimerInterval);
+  }
+  
+  gameState.isNegotiationRound = false;
+  
+  // Informer alle klienter om at forhandlingen er avsluttet
+  io.emit('negotiation-end');
+  
+  // Start en vanlig rundtimer
+  gameState.timer = 60;
   startRoundTimer();
 }
 
@@ -478,17 +506,21 @@ io.on('connection', (socket) => {
       // Sjekk om alle har stemt
       const groupCount = Object.keys(gameState.groups).length;
       if (gameState.negotiationVotes.yes + gameState.negotiationVotes.no >= groupCount) {
-        // Hvis alle har stemt ja, start forhandling
+        // Hvis alle har stemt ja, fortsett forhandling (timer kjører allerede)
         if (gameState.negotiationVotes.yes === groupCount) {
-          startNegotiation();
+          io.emit('negotiation-start');
         } else {
-          // Ellers, hopp over forhandling og gå til normal runde
-          gameState.isNegotiationRound = false;
-          startRoundTimer();
+          // Ellers, avbryt forhandling og gå til normal runde
+          cancelNegotiation();
         }
       }
-      
-      io.emit('update-state', gameState);
+    }
+  });
+  
+  // Håndter avbrytelse av forhandling fra hovedskjermen
+  socket.on('cancel-negotiation', () => {
+    if (gameState.isNegotiationRound) {
+      cancelNegotiation();
     }
   });
   
