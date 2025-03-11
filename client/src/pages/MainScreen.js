@@ -367,6 +367,7 @@ function MainScreen() {
     waitingForNextRound: false,
   });
   const [errorMessage, setErrorMessage] = useState(null);
+  // eslint-disable-next-line
   const [groupsConnected, setGroupsConnected] = useState(0);
   const [revealedGroups, setRevealedGroups] = useState({});
   const [pointsRevealed, setPointsRevealed] = useState(false);
@@ -466,17 +467,19 @@ function MainScreen() {
     });
     
     newSocket.on("choice-revealed", (data) => {
+      // eslint-disable-next-line
       const { groupId, choice, groups: updatedGroups, isLastGroup } = data;
       
-      setRevealedGroups(prev => ({
-        ...prev,
-        [groupId]: choice
+      // Oppdater revealedGroups med valget
+      setRevealedGroups(prevState => ({
+        ...prevState,
+        [groupId]: choice  // Bruker bare choice direkte, siden det er det serveren sender
       }));
       
-      setGameState(prevState => ({
-        ...prevState,
-        groups: updatedGroups
-      }));
+      // Sett all choices revealed flagg hvis dette er den siste gruppen
+      if (isLastGroup) {
+        setAllChoicesRevealed(true);
+      }
     });
     
     newSocket.on("points-revealed", (updatedGameState) => {

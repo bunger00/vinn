@@ -291,8 +291,8 @@ const InfoMessage = styled.div`
 
 // Hovedkomponent
 function GroupScreen() {
-  const { groupId } = useParams();
   const navigate = useNavigate();
+  const { groupId } = useParams();
   
   const [socket, setSocket] = useState(null);
   const [group, setGroup] = useState(null);
@@ -309,14 +309,18 @@ function GroupScreen() {
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [choiceLocked, setChoiceLocked] = useState(false);
   const [negotiationVoted, setNegotiationVoted] = useState(false);
+  // eslint-disable-next-line
   const [choice, setChoice] = useState(null);
   const [score, setScore] = useState(0);
   const [waitingForNextRound, setWaitingForNextRound] = useState(false);
+  // eslint-disable-next-line
   const [history, setHistory] = useState([]);
-  const [timer, setTimer] = useState(null);
+  // eslint-disable-next-line
+  const [timer, setTimer] = useState(0);
   const [infoMessage, setInfoMessage] = useState(null);
   const [pointsRevealed, setPointsRevealed] = useState(false);
   const [pendingPoints, setPendingPoints] = useState(null);
+  // eslint-disable-next-line
   const [allChoicesRevealed, setAllChoicesRevealed] = useState(false);
   
   // Beregn antall grupper og om vi er klare til å starte
