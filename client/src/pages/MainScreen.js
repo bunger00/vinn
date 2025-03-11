@@ -110,6 +110,11 @@ const GroupCard = styled.div`
     transform: translateY(-5px);
     box-shadow: 0 5px 15px var(--shadow-color);
   }
+
+  ${props => props.allRevealed && `
+    border: 2px solid var(--accent-yellow);
+    box-shadow: 0 0 10px var(--accent-yellow);
+  `}
 `;
 
 const GroupName = styled.h3`
@@ -316,6 +321,10 @@ const ChoiceRevealed = styled.div`
     border: 2px solid var(--accent-green);
   `}
   
+  ${props => props.allRevealed && `
+    animation: pulseEffect 1.5s infinite;
+  `}
+  
   @keyframes revealAnimation {
     0% {
       transform: scale(0.1) rotate(-90deg);
@@ -327,6 +336,21 @@ const ChoiceRevealed = styled.div`
     100% {
       transform: scale(1) rotate(0deg);
       opacity: 1;
+    }
+  }
+  
+  @keyframes pulseEffect {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+    }
+    70% {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 10px rgba(255, 215, 0, 0);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
     }
   }
 `;
@@ -550,7 +574,7 @@ function MainScreen() {
     const isRevealed = revealedGroups[groupId] !== undefined;
     
     return (
-      <GroupCard key={groupId}>
+      <GroupCard key={groupId} allRevealed={allChoicesRevealed}>
         <GroupName>{group.name}</GroupName>
         
         {/* Vis score basert på om poengene er avslørt eller ikke */}
@@ -561,7 +585,7 @@ function MainScreen() {
         {gameState.waitingForNextRound ? (
           <ChoiceContainer>
             {isRevealed ? (
-              <ChoiceRevealed choice={revealedGroups[groupId]}>
+              <ChoiceRevealed choice={revealedGroups[groupId]} allRevealed={allChoicesRevealed}>
                 {revealedGroups[groupId]}
               </ChoiceRevealed>
             ) : (
