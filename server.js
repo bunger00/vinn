@@ -33,8 +33,22 @@ const gameState = {
   completedRounds: []
 };
 
+// Globale timervariaber for bedre håndtering og opprydding
+let timerInterval;
+let negotiationTimerInterval;
+
 // Funksjon for full resetting av spillet, inkludert fjerning av alle grupper
 function fullReset() {
+  // Stopp alle timere
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  if (negotiationTimerInterval) {
+    clearInterval(negotiationTimerInterval);
+    negotiationTimerInterval = null;
+  }
+
   gameState.isActive = false;
   gameState.currentRound = 0;
   gameState.timer = 60;
@@ -56,6 +70,16 @@ function fullReset() {
 
 // Funksjon for å initialisere spillet på nytt
 function resetGame() {
+  // Stopp alle timere
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  if (negotiationTimerInterval) {
+    clearInterval(negotiationTimerInterval);
+    negotiationTimerInterval = null;
+  }
+
   gameState.isActive = false;
   gameState.currentRound = 0;
   gameState.timer = 60;
@@ -82,6 +106,21 @@ function resetGame() {
 
 // Funksjon for å håndtere neste runde
 function startNextRound() {
+  console.log(`Starter runde ${gameState.currentRound + 1}`);
+  
+  // Stopp alle timer-intervaller for å sikre at vi starter med rene timer-forhold
+  if (timerInterval) {
+    console.log('Rydder opp eksisterende timer før start av ny runde');
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  
+  if (negotiationTimerInterval) {
+    console.log('Rydder opp eksisterende forhandlingstimer før start av ny runde');
+    clearInterval(negotiationTimerInterval);
+    negotiationTimerInterval = null;
+  }
+  
   // Nullstill flagget for venting på neste runde
   gameState.waitingForNextRound = false;
   
@@ -93,6 +132,7 @@ function startNextRound() {
   }
   
   gameState.currentRound++;
+  console.log(`Runde ${gameState.currentRound} starter`);
   
   // Nullstill valg for den nye runden
   gameState.roundChoices = {};
@@ -143,30 +183,48 @@ function startNextRound() {
 
 // Funksjon for å starte nedtelling
 function startRoundTimer() {
+  // Rydde opp eventuelle eksisterende intervaller
+  if (timerInterval) {
+    console.log(`Rydder opp gammel timer før start av ny runde ${gameState.currentRound}`);
+    clearInterval(timerInterval);
+  }
+  
   gameState.isActive = true;
   gameState.timer = 60;
   
-  const timerInterval = setInterval(() => {
+  console.log(`Starter timer for runde ${gameState.currentRound}`);
+  
+  timerInterval = setInterval(() => {
     gameState.timer--;
     
     io.emit('timer-update', gameState.timer);
     
     if (gameState.timer <= 0) {
+      console.log(`Timer for runde ${gameState.currentRound} er ferdig. Avslutter runden.`);
       clearInterval(timerInterval);
+      timerInterval = null;
       endRound();
     }
   }, 1000);
 }
 
 // Funksjon for å starte forhandlingstimer
-let negotiationTimerInterval;
 function startNegotiationTimer() {
   // Rydde opp eventuelle eksisterende intervaller
   if (negotiationTimerInterval) {
+    console.log('Rydder opp gammel forhandlingstimer før start av ny');
     clearInterval(negotiationTimerInterval);
   }
   
+  // Rydde opp også vanlig timer for å være sikker
+  if (timerInterval) {
+    console.log('Rydder opp vanlig timer før start av forhandlingstimer');
+    clearInterval(timerInterval);
+  }
+  
   gameState.negotiationTimer = 180; // 3 minutter
+  
+  console.log(`Starter forhandlingstimer for runde ${gameState.currentRound}`);
   
   negotiationTimerInterval = setInterval(() => {
     gameState.negotiationTimer--;
@@ -174,7 +232,9 @@ function startNegotiationTimer() {
     io.emit('negotiation-timer-update', gameState.negotiationTimer);
     
     if (gameState.negotiationTimer <= 0) {
+      console.log('Forhandlingstimer er ferdig. Avslutter forhandling.');
       clearInterval(negotiationTimerInterval);
+      negotiationTimerInterval = null;
       endNegotiation();
     }
   }, 1000);
@@ -198,10 +258,26 @@ function startNegotiation() {
 
 // Funksjon for å avslutte forhandling
 function endNegotiation() {
+  // Stopp forhandlingstimeren
+  if (negotiationTimerInterval) {
+    clearInterval(negotiationTimerInterval);
+    negotiationTimerInterval = null;
+  }
+  
+  // Sikre at vanlig timer også er stoppet
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  
+  // Gå tilbake til vanlig spill
   gameState.isNegotiationRound = false;
+  
+  // Informer alle om at forhandlingen er slutt
   io.emit('negotiation-end');
   
-  // Start normal runde etter forhandling
+  // Start timeren for vanlig runde
+  gameState.timer = 60;
   startRoundTimer();
 }
 
@@ -210,6 +286,13 @@ function cancelNegotiation() {
   // Stopp forhandlingstimeren
   if (negotiationTimerInterval) {
     clearInterval(negotiationTimerInterval);
+    negotiationTimerInterval = null;
+  }
+  
+  // Sikre at vanlig timer også er stoppet
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
   }
   
   gameState.isNegotiationRound = false;
@@ -224,6 +307,16 @@ function cancelNegotiation() {
 
 // Funksjon for å avslutte runden og beregne resultater
 function endRound() {
+  // Stopp alle timere for å være sikker
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  if (negotiationTimerInterval) {
+    clearInterval(negotiationTimerInterval);
+    negotiationTimerInterval = null;
+  }
+  
   // Sjekk om runden allerede er avsluttet for å unngå duplisering
   if (gameState.completedRounds.includes(gameState.currentRound)) {
     console.log(`Runde ${gameState.currentRound} er allerede avsluttet. Ignorerer duplikat endRound-kall.`);
