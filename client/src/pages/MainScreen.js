@@ -402,10 +402,13 @@ function MainScreen() {
   useEffect(() => {
     // Bestem server-URL basert på miljø
     const socketUrl = process.env.NODE_ENV === 'production' 
-      ? '/.netlify/functions/server' 
+      ? 'https://vinn-server.onrender.com' 
       : '/';
     
-    const newSocket = io(socketUrl);
+    const newSocket = io(socketUrl, {
+      withCredentials: true,
+      transports: ['websocket']
+    });
     
     newSocket.on("connect", () => {
       console.log("Tilkoblet til serveren");

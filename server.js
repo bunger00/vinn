@@ -8,8 +8,11 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: process.env.NODE_ENV === 'production'
+      ? ["https://vinn-spill.netlify.app", "https://www.vinnspill.no", "http://localhost:3000"]
+      : "*",
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
@@ -375,7 +378,14 @@ function startSequentialReveal() {
 }
 
 // Serve statiske filer fra /client/build i produksjon
+// I produksjon bruker vi Netlify for frontend, derfor trenger vi ikke å serve statiske filer her
 if (process.env.NODE_ENV === 'production') {
+  // API-route for helsekontroll
+  app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'ok', message: 'Server er oppe og kjører' });
+  });
+} else {
+  // Bare i utvikling - serve statiske filer lokalt
   app.use(express.static(path.join(__dirname, 'client/build')));
   
   app.get('*', (req, res) => {
